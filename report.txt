@@ -1,0 +1,17 @@
+I could not get select to reliably pick up on when a pipe had data when I used
+only a single fd_set, so I had to use an array of fd_set that is the length of
+the number of children. 
+
+I noticed that sometimes the pipe would have one extra byte to the output that
+was not valid ascii, so I wrote a function to ensure that the last bytes
+written to the file are a newline. 
+
+Also, if the struct timevalue used for the timeout of select(2) had too small
+of a value, select would say there is data to be read, and read would read the
+same data multiple times.
+
+I also came to the conclusion that select(2) and the subsequent FD functions
+required to use select(2) have poor documentation, and are not as reliable as
+setting the fd to only support nonblocking calls using ioctl(2) and checking
+to see if errno==EAGAIN when read(2) returns. Plus the fd_set doesn't do very
+well with more than one fd in the set, which makes it pointless.
