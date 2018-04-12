@@ -12,13 +12,13 @@
 #define numChildren 5
 #define READ_PIPE 0
 #define WRITE_PIPE 1
-#define TIME_TO_RUN 30
+#define TIME_TO_RUN 10
 #define MAX_SLEEP_TIME 2
 
 #define TIME_BUFF_SIZE 10
-#define BUFF_SIZE 64
+#define BUFF_SIZE 1024
 
-clock_t startClock;
+struct timeval startTV;
 
 int **getPipes() {
     int i, **pipes = (int **) malloc(numChildren*sizeof(int *));
@@ -47,20 +47,39 @@ void freePipes(int ***pipes) {
  *      ZZZ is the number of milliseconds
  */
 char *getTime() {
-    char *retval = (char *)calloc(TIME_BUFF_SIZE, sizeof(char));
-    clock_t currentClock = clock();
-    float timeSinceStart = ((float)(currentClock-startClock))/CLOCKS_PER_SEC;
-    int secsSinceStart = (int)timeSinceStart;
-    float msSinceStart = timeSinceStart-secsSinceStart; 
-    snprintf(retval, TIME_BUFF_SIZE, "0:%02d.%.3f:", secsSinceStart, msSinceStart);
+    struct timeval now;
+    char *retval = (char *)calloc(TIME_BUFF_SIZE+1, sizeof(char));
+    gettimeofday(&now, NULL);
+    int msSinceStart = (now.tv_usec-startTV.tv_usec)/1000;
+    if(msSinceStart < 0) {
+        msSinceStart = ((now.tv_usec+1000000)-startTV.tv_usec)/1000;
+    }
+    int secsSinceStart = now.tv_sec-startTV.tv_sec;
+    snprintf(retval, TIME_BUFF_SIZE, "0:%02d.%03d:", secsSinceStart, msSinceStart);
     return retval;
+}
+
+void writeCarefully(char *timeBuff, char *buff, int readVal, FILE *stream) {
+    int i;
+    fwrite(timeBuff, sizeof(char), TIME_BUFF_SIZE-1, stream);
+    for(i = 0; i < readVal; i++) {
+        if(buff[i] == 9 || buff[i] == 10 || buff[i] == 13 || (buff[i] >= 32 && buff[i] <= 126)) {
+            fputc(buff[i], stream);
+        }
+        if(i == readVal-1 && buff[i] != 10 && buff[i] != 13) {
+            if(buff[i] == 0 && buff[i-1] != 10 && buff[i-1] != 13) {
+                printf("buff[i] == %d\n", buff[i]);
+                fputc('\n', stream);
+            }
+        }
+    }
 }
 
 void readFromPipes(int ***pipesRef) {
     struct timeval tv;
     char buff[BUFF_SIZE], *timeBuff;
     fd_set readSet[numChildren];
-    int i, selectVal, readVal, **pipes = *pipesRef, largestFD = 0;
+    int i, selectVal, readVal, **pipes = *pipesRef;
     time_t startTime = 0;
     FILE *outputFile = fopen("output.txt", "w");
     if(outputFile == NULL) {
@@ -72,20 +91,15 @@ void readFromPipes(int ***pipesRef) {
     tv.tv_usec = 0;
     for(i = 0; i < numChildren; i++) {
         close(pipes[i][WRITE_PIPE]);
-        if(pipes[i][READ_PIPE] > largestFD) {
-            largestFD = pipes[i][READ_PIPE];
-        }
     }
-    largestFD++;
     
     startTime = time(0);
-    startClock = clock();
+    gettimeofday(&startTV, NULL);
     while(time(0)-startTime < TIME_TO_RUN) {
         FD_ZERO(&readSet[i]);
         for(i = 0; i < numChildren; i++) {
             FD_SET(pipes[i][READ_PIPE], &readSet[i]);
             selectVal = select(pipes[i][READ_PIPE]+1, &readSet[i], NULL, NULL, &tv);
-            printf("%d selectVal\n", selectVal);
             tv.tv_sec = 4;
             tv.tv_usec = 0;
             if(selectVal == -1) {
@@ -94,8 +108,9 @@ void readFromPipes(int ***pipesRef) {
                 // read from a pipe
                 if((readVal = read(pipes[i][READ_PIPE], &buff, BUFF_SIZE)) > 0) {
                     timeBuff = getTime();
-                    fwrite(timeBuff, sizeof(char), TIME_BUFF_SIZE-1, outputFile);
-                    fwrite(buff, sizeof(char), readVal-1, outputFile);
+                    writeCarefully(timeBuff, buff, readVal, outputFile);
+                  //  fwrite(timeBuff, sizeof(char), TIME_BUFF_SIZE-1, outputFile);
+                  //  fwrite(buff, sizeof(char), readVal-1, outputFile);
                     printf("timeBuff = %s buff=%s", timeBuff, buff);
                     memset(buff, 0, sizeof(char)*BUFF_SIZE);
                     free(timeBuff);
@@ -104,7 +119,7 @@ void readFromPipes(int ***pipesRef) {
                     fprintf(stderr, "read failed with errno %d\n", errno);
                 }
             } 
-        }
+        } 
     }
 
     fclose(outputFile);
@@ -121,9 +136,10 @@ void writeToPipe(int **pipe, int childNum) {
     int sleepTime, messageNum = 0;
     char buff[BUFF_SIZE], *timeBuff;
     close((*pipe)[READ_PIPE]);
+    srand(0);
 
     startTime = time(0);
-    startClock = clock();
+    gettimeofday(&startTV, NULL);
     while(time(0)-startTime < TIME_TO_RUN) {
         messageNum++;
         sleepTime = rand()%(MAX_SLEEP_TIME+1);
@@ -132,7 +148,7 @@ void writeToPipe(int **pipe, int childNum) {
         }
         timeBuff = getTime();
         snprintf(buff, BUFF_SIZE, "%s Child %d message %d\n", timeBuff, childNum, messageNum);
-        write((*pipe)[WRITE_PIPE], buff, sizeof(char)*BUFF_SIZE);
+        write((*pipe)[WRITE_PIPE], buff, strlen(buff)+1);
         free(timeBuff);
         timeBuff = NULL;
     }
@@ -149,13 +165,13 @@ void lastChild(int **pipe) {
     char buff[BUFF_SIZE], *timeBuff;
 
     startTime = time(0);
-    startClock = clock();
+    gettimeofday(&startTV, NULL);
     while(time(0)-startTime < TIME_TO_RUN) {
         if((nread = getline(&line, &alloced, stdin)) != -1) {
             messageNum++;
             timeBuff = getTime();
-            snprintf(buff, BUFF_SIZE, "%s Child 5 message %d\n", timeBuff, messageNum);
-            write((*pipe)[WRITE_PIPE], buff, sizeof(char)*BUFF_SIZE);
+            snprintf(buff, BUFF_SIZE, "%s %s\n", timeBuff, line);
+            write((*pipe)[WRITE_PIPE], buff, strlen(buff+1));
             free(timeBuff);
             timeBuff = NULL;
         }
@@ -169,15 +185,11 @@ void makeChildren(int ***pipes) {
     for(i = 0; i < numChildren; i++) {
         pids[i] = fork();
         if(i == numChildren-1 && pids[i] == 0) {
-            printf("child %d made\n", i+1); 
             lastChild(&((*pipes)[i]));
-            printf("child %d quit\n", i+1); 
             return;
         } else {
             if(pids[i] == 0) {
-                printf("child %d made\n", i+1); 
                 writeToPipe(&((*pipes)[i]), i+1);               
-                printf("child %d quit\n", i+1); 
                 return;
             }
         }
