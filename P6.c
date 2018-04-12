@@ -18,7 +18,7 @@
 #define TIME_BUFF_SIZE 10
 #define BUFF_SIZE 64
 
-clock_t startClock;
+struct timeval startTV;
 
 int **getPipes() {
     int i, **pipes = (int **) malloc(numChildren*sizeof(int *));
@@ -47,12 +47,12 @@ void freePipes(int ***pipes) {
  *      ZZZ is the number of milliseconds
  */
 char *getTime() {
+    struct timeval now;
     char *retval = (char *)calloc(TIME_BUFF_SIZE, sizeof(char));
-    clock_t currentClock = clock();
-    float timeSinceStart = ((float)(currentClock-startClock))/CLOCKS_PER_SEC;
-    int secsSinceStart = (int)timeSinceStart;
-    float msSinceStart = timeSinceStart-secsSinceStart; 
-    snprintf(retval, TIME_BUFF_SIZE, "0:%02d.%.3f:", secsSinceStart, msSinceStart);
+    gettimeofday(&now, NULL);
+    int msSinceStart = (now.tv_usec-startTV.tv_usec)/1000;
+    int secsSinceStart = now.tv_sec-startTV.tv_sec;
+    snprintf(retval, TIME_BUFF_SIZE, "0:%02d.%03d:", secsSinceStart, msSinceStart);
     return retval;
 }
 
@@ -68,7 +68,7 @@ void readFromPipes(int ***pipesRef) {
         exit(errno);
     }
 
-    tv.tv_sec = 1;
+    tv.tv_sec = 2;
     tv.tv_usec = 0;
     for(i = 0; i < numChildren; i++) {
         close(pipes[i][WRITE_PIPE]);
@@ -77,10 +77,13 @@ void readFromPipes(int ***pipesRef) {
     }
 
     startTime = time(0);
-    startClock = clock();
-    while(time(0)-startTime > TIME_TO_RUN) {
+    gettimeofday(&startTV, NULL);
+    while(time(0)-startTime < TIME_TO_RUN) {
         for(i = 0; i < numChildren; i++) {
             selectVal = select(1, &readSet[i], NULL, NULL, &tv);
+            printf("%d selectVal\n", selectVal);
+            tv.tv_sec = 4;
+            tv.tv_usec = 0;
             if(selectVal == -1) {
                 fprintf(stderr, "select failed with errno %d\n", errno);
             } else if(selectVal) {
@@ -116,8 +119,8 @@ void writeToPipe(int **pipe, int childNum) {
     close((*pipe)[READ_PIPE]);
 
     startTime = time(0);
-    startClock = clock();
-    while(time(0)-startTime > TIME_TO_RUN) {
+    gettimeofday(&startTV, NULL);
+    while(time(0)-startTime < TIME_TO_RUN) {
         messageNum++;
         sleepTime = rand()%(MAX_SLEEP_TIME+1);
         if(sleepTime != 0) {
@@ -126,6 +129,7 @@ void writeToPipe(int **pipe, int childNum) {
         timeBuff = getTime();
         snprintf(buff, BUFF_SIZE, "%s Child %d message %d\n", timeBuff, childNum, messageNum);
         write((*pipe)[WRITE_PIPE], buff, sizeof(char)*BUFF_SIZE);
+//        printf("wrote %s\n", buff);
         free(timeBuff);
         timeBuff = NULL;
     }
@@ -133,7 +137,7 @@ void writeToPipe(int **pipe, int childNum) {
     close((*pipe)[WRITE_PIPE]);
 }
 
-void fifthChild(int **pipe) {
+void lastChild(int **pipe) {
     time_t startTime = time(0);
     char *line = NULL;
     size_t alloced = 0;
@@ -142,9 +146,10 @@ void fifthChild(int **pipe) {
     char buff[BUFF_SIZE], *timeBuff;
 
     startTime = time(0);
-    startClock = clock();
-    while(time(0)-startTime > TIME_TO_RUN) {
+    gettimeofday(&startTV, NULL);
+    while(time(0)-startTime < TIME_TO_RUN) {
         if((nread = getline(&line, &alloced, stdin)) != -1) {
+  //          printf("**** CHILD FIVE ****\n");
             messageNum++;
             timeBuff = getTime();
             snprintf(buff, BUFF_SIZE, "%s Child 5 message %d\n", timeBuff, messageNum);
@@ -162,15 +167,11 @@ void makeChildren(int ***pipes) {
     for(i = 0; i < numChildren; i++) {
         pids[i] = fork();
         if(i == numChildren-1 && pids[i] == 0) {
-            printf("child %d made\n", i+1); 
-            fifthChild(&((*pipes)[i]));
-            printf("child %d quit\n", i+1); 
+            lastChild(&((*pipes)[i]));
             return;
         } else {
             if(pids[i] == 0) {
-                printf("child %d made\n", i+1); 
                 writeToPipe(&((*pipes)[i]), i+1);               
-                printf("child %d quit\n", i+1); 
                 return;
             }
         }
