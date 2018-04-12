@@ -60,7 +60,7 @@ void readFromPipes(int ***pipesRef) {
     struct timeval tv;
     char buff[BUFF_SIZE], *timeBuff;
     fd_set readSet[numChildren];
-    int i, selectVal, **pipes = *pipesRef;
+    int i, selectVal, **pipes = *pipesRef, largestFD = 0;
     time_t startTime = 0;
     FILE *outputFile = fopen("output.txt", "w");
     if(outputFile == NULL) {
@@ -74,13 +74,17 @@ void readFromPipes(int ***pipesRef) {
         close(pipes[i][WRITE_PIPE]);
         FD_ZERO(&readSet[i]);
         FD_SET(pipes[i][READ_PIPE], &readSet[i]);
+        if(pipes[i][READ_PIPE] > largestFD) {
+            largestFD = pipes[i][READ_PIPE];
+        }
     }
-
+    largestFD++;
+    
     startTime = time(0);
     gettimeofday(&startTV, NULL);
     while(time(0)-startTime < TIME_TO_RUN) {
         for(i = 0; i < numChildren; i++) {
-            selectVal = select(1, &readSet[i], NULL, NULL, &tv);
+            selectVal = select(pipes[i][READ_PIPE]+1, &readSet[i], NULL, NULL, &tv);
             printf("%d selectVal\n", selectVal);
             tv.tv_sec = 4;
             tv.tv_usec = 0;
