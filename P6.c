@@ -60,7 +60,7 @@ void readFromPipes(int ***pipesRef) {
     struct timeval tv;
     char buff[BUFF_SIZE], *timeBuff;
     fd_set readSet[numChildren];
-    int i, selectVal, **pipes = *pipesRef;
+    int i, selectVal, readVal, **pipes = *pipesRef, largestFD = 0;
     time_t startTime = 0;
     FILE *outputFile = fopen("output.txt", "w");
     if(outputFile == NULL) {
@@ -68,27 +68,34 @@ void readFromPipes(int ***pipesRef) {
         exit(errno);
     }
 
-    tv.tv_sec = 1;
+    tv.tv_sec = 4;
     tv.tv_usec = 0;
     for(i = 0; i < numChildren; i++) {
         close(pipes[i][WRITE_PIPE]);
-        FD_ZERO(&readSet[i]);
-        FD_SET(pipes[i][READ_PIPE], &readSet[i]);
+        if(pipes[i][READ_PIPE] > largestFD) {
+            largestFD = pipes[i][READ_PIPE];
+        }
     }
-
+    largestFD++;
+    
     startTime = time(0);
     startClock = clock();
-    while(time(0)-startTime > TIME_TO_RUN) {
+    while(time(0)-startTime < TIME_TO_RUN) {
+        FD_ZERO(&readSet[i]);
         for(i = 0; i < numChildren; i++) {
-            selectVal = select(1, &readSet[i], NULL, NULL, &tv);
+            FD_SET(pipes[i][READ_PIPE], &readSet[i]);
+            selectVal = select(pipes[i][READ_PIPE]+1, &readSet[i], NULL, NULL, &tv);
+            printf("%d selectVal\n", selectVal);
+            tv.tv_sec = 4;
+            tv.tv_usec = 0;
             if(selectVal == -1) {
                 fprintf(stderr, "select failed with errno %d\n", errno);
             } else if(selectVal) {
                 // read from a pipe
-                if(read(pipes[i][READ_PIPE], &buff, BUFF_SIZE) > 0) {
+                if((readVal = read(pipes[i][READ_PIPE], &buff, BUFF_SIZE)) > 0) {
                     timeBuff = getTime();
-                    fwrite(timeBuff, sizeof(char), 10, outputFile);
-                    fwrite(buff, sizeof(char), BUFF_SIZE, outputFile);
+                    fwrite(timeBuff, sizeof(char), TIME_BUFF_SIZE-1, outputFile);
+                    fwrite(buff, sizeof(char), readVal-1, outputFile);
                     printf("timeBuff = %s buff=%s", timeBuff, buff);
                     memset(buff, 0, sizeof(char)*BUFF_SIZE);
                     free(timeBuff);
@@ -117,7 +124,7 @@ void writeToPipe(int **pipe, int childNum) {
 
     startTime = time(0);
     startClock = clock();
-    while(time(0)-startTime > TIME_TO_RUN) {
+    while(time(0)-startTime < TIME_TO_RUN) {
         messageNum++;
         sleepTime = rand()%(MAX_SLEEP_TIME+1);
         if(sleepTime != 0) {
@@ -133,7 +140,7 @@ void writeToPipe(int **pipe, int childNum) {
     close((*pipe)[WRITE_PIPE]);
 }
 
-void fifthChild(int **pipe) {
+void lastChild(int **pipe) {
     time_t startTime = time(0);
     char *line = NULL;
     size_t alloced = 0;
@@ -143,7 +150,7 @@ void fifthChild(int **pipe) {
 
     startTime = time(0);
     startClock = clock();
-    while(time(0)-startTime > TIME_TO_RUN) {
+    while(time(0)-startTime < TIME_TO_RUN) {
         if((nread = getline(&line, &alloced, stdin)) != -1) {
             messageNum++;
             timeBuff = getTime();
@@ -163,7 +170,7 @@ void makeChildren(int ***pipes) {
         pids[i] = fork();
         if(i == numChildren-1 && pids[i] == 0) {
             printf("child %d made\n", i+1); 
-            fifthChild(&((*pipes)[i]));
+            lastChild(&((*pipes)[i]));
             printf("child %d quit\n", i+1); 
             return;
         } else {
