@@ -3,9 +3,11 @@
 This repo has code to create 5 processes, which write to a pipe, while the original process reads from the pipes and writes what it recieves to a file. This process continues for 30 seconds. It was made to satisfy an assignment for COEN383: Advanced Operating Systems at Santa Clara University.
 
 To compile:
+    
     make
 
 To execute:
+    
     bin/P6
 
 
