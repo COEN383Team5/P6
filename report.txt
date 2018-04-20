@@ -1,6 +1,7 @@
 I could not get select to reliably pick up on when a pipe had data when I used
 only a single fd_set, so I had to use an array of fd_set that is the length of
-the number of children. 
+the number of children. This is counter intuitive because a fd_set should be
+able to support more than one file descripter in it at a time.
 
 I noticed that sometimes the pipe would have one extra byte to the output that
 was not valid ascii, so I wrote a function to ensure that the last bytes
