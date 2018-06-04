@@ -12,12 +12,11 @@
 #define numChildren 5
 #define READ_PIPE 0
 #define WRITE_PIPE 1
-#define TIME_TO_RUN 10
+#define TIME_TO_RUN 30
 // MAX_SLEEP_TIME is in seconds
 #define MAX_SLEEP_TIME 2
 // TV_WAIT_TIME is in seconds
 #define TV_WAIT_TIME 2
-
 
 #define TIME_BUFF_SIZE 10
 #define BUFF_SIZE 1024
@@ -119,10 +118,6 @@ void readFromPipes(int **pipes) {
 
     tv.tv_sec = 4;
     tv.tv_usec = 0;
-    for(i = 0; i < numChildren; i++) {
-        close(pipes[i][WRITE_PIPE]);
-    }
-    
     startTime = time(0);
     gettimeofday(&startTV, NULL);
     while(time(0)-startTime < TIME_TO_RUN) {
@@ -149,11 +144,11 @@ void readFromPipes(int **pipes) {
             } 
         } 
     }
-
-    fclose(outputFile);
     for(i = 0; i < numChildren; i++) {
+        close(pipes[i][WRITE_PIPE]);
         close(pipes[i][READ_PIPE]);
     }
+    fclose(outputFile);
 }
 
 /* periodically writes to the write pipe

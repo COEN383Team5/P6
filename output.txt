@@ -2,52 +2,113 @@
 0:01.000:0:01.000: Child 2 message 1
 0:01.000:0:01.000: Child 3 message 1
 0:01.000:0:01.000: Child 4 message 1
-0:03.002:0:02.001: Child 1 message 2
+0:02.752:0:02.752: hey
+0:02.000:0:02.001: Child 1 message 2
 0:02.001: Child 1 message 3
-0:03.001: Child 1 message 4
-0:03.002:0:02.001: Child 2 message 2
+0:02.000:0:02.001: Child 2 message 2
 0:02.001: Child 2 message 3
-0:03.001: Child 2 message 4
-0:03.002:0:02.000: Child 3 message 2
-0:02.000: Child 3 message 3
-0:03.001: Child 3 message 4
-0:03.002:0:02.000: Child 4 message 2
+0:02.000:0:02.001: Child 3 message 2
+0:02.001: Child 3 message 3
+0:02.001:0:02.000: Child 4 message 2
 0:02.000: Child 4 message 3
-0:03.000: Child 4 message 4
-0:03.305:0:03.305: dsafasdfasdfasdf
-0:05.000:0:05.001: Child 1 message 5
-0:05.000:0:05.001: Child 2 message 5
-0:05.000:0:05.001: Child 3 message 5
-0:05.001:0:05.001: Child 4 message 5
-0:05.001:0:04.563: dd
-0:04.755: d
-0:04.933: fd
-0:04.137: f
+0:03.548:0:03.548: cool
+0:03.001:0:03.001: Child 1 message 4
+0:03.001:0:03.001: Child 2 message 4
+0:03.001:0:03.001: Child 3 message 4
+0:03.001:0:03.001: Child 4 message 4
+0:05.003:0:05.002: Child 1 message 5
+0:05.004:0:05.001: Child 2 message 5
+0:05.004:0:05.001: Child 3 message 5
+0:05.004:0:05.001: Child 4 message 5
+0:06.319:0:06.319: I fixed the errors
 0:06.001:0:06.002: Child 1 message 6
-0:06.001:0:06.002: Child 2 message 6
+0:06.001:0:06.001: Child 2 message 6
 0:06.001:0:06.001: Child 3 message 6
 0:06.001:0:06.001: Child 4 message 6
-0:06.001:0:06.740: da
-0:07.002:0:07.002: Child 1 message 7
+0:08.635:0:08.635: or so I think
+0:08.635:0:07.002: Child 1 message 7
 0:07.002: Child 1 message 8
 0:07.002: Child 1 message 9
-0:07.002:0:07.002: Child 2 message 7
+0:08.635:0:07.002: Child 2 message 7
 0:07.002: Child 2 message 8
 0:07.002: Child 2 message 9
-0:07.002:0:07.002: Child 3 message 7
+0:08.636:0:07.002: Child 3 message 7
 0:07.002: Child 3 message 8
 0:07.002: Child 3 message 9
-0:07.002:0:07.002: Child 4 message 7
+0:08.636:0:07.002: Child 4 message 7
 0:07.002: Child 4 message 8
 0:07.002: Child 4 message 9
-0:07.002:0:07.682: dasdf
-0:08.002:0:08.003: Child 1 message 10
-0:08.002:0:08.003: Child 2 message 10
-0:08.002:0:08.002: Child 3 message 10
-0:08.002:0:08.002: Child 4 message 10
-0:08.005:0:08.005: fds 
-0:10.003:0:10.003: Child 1 message 11
-0:10.003:0:10.003: Child 2 message 11
-0:10.003:0:10.003: Child 3 message 11
-0:10.003:0:10.003: Child 4 message 11
-0:11.773:0:11.772: d
+0:10.638:0:08.002: Child 1 message 10
+0:10.638:0:08.002: Child 2 message 10
+0:10.639:0:08.002: Child 3 message 10
+0:10.639:0:08.002: Child 4 message 10
+0:12.641:0:10.002: Child 1 message 11
+0:11.003: Child 1 message 12
+0:12.641:0:10.002: Child 2 message 11
+0:11.003: Child 2 message 12
+0:12.641:0:10.002: Child 3 message 11
+0:11.002: Child 3 message 12
+0:12.641:0:10.002: Child 4 message 11
+0:11.002: Child 4 message 12
+0:13.557:0:13.557: I am not seeing what I saw before
+0:13.002:0:13.003: Child 1 message 13
+0:13.003:0:13.003: Child 2 message 13
+0:13.003:0:13.003: Child 3 message 13
+0:13.003:0:13.002: Child 4 message 13
+0:13.003:0:13.763: 
+0:14.003:0:14.003: Child 1 message 14
+0:14.003:0:14.004: Child 2 message 14
+0:14.003:0:14.003: Child 3 message 14
+0:14.003:0:14.003: Child 4 message 14
+0:16.004:0:16.003: Child 1 message 15
+0:16.004:0:16.004: Child 2 message 15
+0:16.004:0:16.003: Child 3 message 15
+0:16.004:0:16.003: Child 4 message 15
+0:17.408:0:17.408: hopefuly it is fixed now
+0:17.003:0:17.004: Child 1 message 16
+0:17.004: Child 1 message 17
+0:17.004: Child 1 message 18
+0:17.004:0:17.004: Child 2 message 16
+0:17.005: Child 2 message 17
+0:17.005: Child 2 message 18
+0:17.004:0:17.003: Child 3 message 16
+0:17.004: Child 3 message 17
+0:17.004: Child 3 message 18
+0:17.004:0:17.003: Child 4 message 16
+0:17.003: Child 4 message 17
+0:17.003: Child 4 message 18
+0:19.637:0:19.637: we will see
+0:19.637:0:18.004: Child 1 message 19
+0:19.637:0:18.005: Child 2 message 19
+0:19.637:0:18.004: Child 3 message 19
+0:19.637:0:18.004: Child 4 message 19
+0:21.639:0:19.005: Child 1 message 20
+0:21.639:0:19.005: Child 2 message 20
+0:21.639:0:19.005: Child 3 message 20
+0:21.639:0:19.004: Child 4 message 20
+0:22.744:0:22.743: if it can do it again
+0:22.744:0:21.005: Child 1 message 21
+0:22.744:0:21.006: Child 2 message 21
+0:22.744:0:21.005: Child 3 message 21
+0:22.744:0:21.005: Child 4 message 21
+0:24.746:0:23.005: Child 1 message 22
+0:23.005: Child 1 message 23
+0:23.005: Child 1 message 24
+0:24.746:0:23.006: Child 2 message 22
+0:23.006: Child 2 message 23
+0:23.006: Child 2 message 24
+0:24.747:0:23.005: Child 3 message 22
+0:23.005: Child 3 message 23
+0:23.005: Child 3 message 24
+0:24.747:0:23.005: Child 4 message 22
+0:23.005: Child 4 message 23
+0:23.005: Child 4 message 24
+0:26.276:0:26.276: I should let my team test it
+0:26.276:0:25.006: Child 1 message 25
+0:26.276:0:25.007: Child 2 message 25
+0:26.277:0:25.006: Child 3 message 25
+0:26.277:0:25.006: Child 4 message 25
+0:28.279:0:27.006: Child 1 message 26
+0:28.279:0:27.007: Child 2 message 26
+0:28.279:0:27.006: Child 3 message 26
+0:28.279:0:27.006: Child 4 message 26
