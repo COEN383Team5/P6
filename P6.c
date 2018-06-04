@@ -120,6 +120,7 @@ void readFromPipes(int **pipes) {
     tv.tv_usec = 0;
     startTime = time(0);
     gettimeofday(&startTV, NULL);
+
     while(time(0)-startTime < TIME_TO_RUN) {
         FD_ZERO(&readSet[i]);
         for(i = 0; i < numChildren; i++) {
